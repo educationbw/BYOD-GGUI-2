@@ -14,11 +14,7 @@ html, body {
   color: #ffffff;
 }
 
-body {
-  background: radial-gradient(circle at top, #0a0a0a 0%, #000 70%);
-  animation: bgShift 12s ease-in-out infinite alternate;
-  background-size: 200% 200%;
-}
+
 
 @keyframes bgShift {
   0% {
