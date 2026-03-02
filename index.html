@@ -8,125 +8,33 @@
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/main.css">
-  <link rel="stylesheet" href="assets/css/pages.css">
 
   <style>
-    .startup-screen {
+    /* ===== FORCE CANVAS LAYER ===== */
+    #bgCanvas {
       position: fixed;
       inset: 0;
-      background: #000;
-      z-index: 10000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      animation: startupFadeOut 1s ease forwards;
-      animation-delay: 1s;
+      z-index: 0;
+      pointer-events: none;
     }
 
-    .startup-logo {
-      font-size: 64px;
-      letter-spacing: 6px;
-      color: #9ffcff;
-      text-shadow: 0 0 35px #00ffff;
-      animation: glowPulse 1.6s ease-in-out infinite;
-    }
-
-    .startup-sub {
-      margin-top: 12px;
-      font-size: 14px;
-      opacity: 0.7;
-      letter-spacing: 2px;
-    }
-
-    @keyframes glowPulse {
-      0% { text-shadow: 0 0 20px #00ffff; }
-      50% { text-shadow: 0 0 50px #00ffff; }
-      100% { text-shadow: 0 0 20px #00ffff; }
-    }
-
-    @keyframes startupFadeOut {
-      to { opacity: 0; pointer-events: none; }
-    }
-
-    .overlay {
+    .custom-cursor {
       position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(8px);
-      z-index: 9000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(0,255,255,0.9);
+      box-shadow: 0 0 12px #00ffffaa;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: 0.1s ease;
+      z-index: 10001;
     }
 
-    .box {
-      width: 90%;
-      max-width: 520px;
-      background: #050505;
-      border-radius: 28px;
-      padding: 28px;
-      border: 2px solid rgba(0,255,255,0.8);
-      box-shadow: 0 0 40px rgba(0,255,255,0.6);
-      text-align: center;
-    }
-
-    .box-title {
-      font-size: 22px;
-      margin-bottom: 12px;
-      color: #9ffcff;
-      text-shadow: 0 0 18px #00ffff;
-    }
-
-    .box-text {
-      font-size: 14px;
-      opacity: 0.85;
-      margin-bottom: 24px;
-      line-height: 1.6;
-      white-space: pre-line;
-      text-align: left;
-    }
-
-    .box-btn {
-      padding: 10px 28px;
-      border: 2px solid #9ffcff;
-      color: #9ffcff;
-      background: transparent;
-      font-family: 'Orbitron', sans-serif;
-      cursor: pointer;
-      border-radius: 10px;
-      box-shadow: 0 0 15px #00ffff;
-      transition: 0.25s ease;
-    }
-
-    .box-btn:hover {
-      box-shadow: 0 0 30px #00ffff;
-      transform: translateY(-1px);
-    }
-
-    .hidden { display: none; }
-
-    .top-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .top-link {
-      padding: 8px 18px;
-      border: 2px solid rgba(0,255,255,0.8);
-      border-radius: 10px;
-      color: #9ffcff;
-      text-decoration: none;
-      font-size: 14px;
-      letter-spacing: 1px;
-      box-shadow: 0 0 12px rgba(0,255,255,0.6);
-      transition: 0.25s ease;
-    }
-
-    .top-link:hover {
-      box-shadow: 0 0 25px rgba(0,255,255,1);
-      transform: translateY(-1px);
+    /* Keep everything above canvas */
+    body > *:not(#bgCanvas) {
+      position: relative;
+      z-index: 1;
     }
   </style>
 </head>
@@ -204,106 +112,108 @@ The creators and contributors are not responsible for consequences arising from 
     <span>G.GUI Project • Version W.1.8</span>
   </footer>
 
-  <!-- Scripts -->
-  <script>
-  document.addEventListener("DOMContentLoaded", () => {
+<script>
+document.addEventListener("DOMContentLoaded", () => {
 
-    const canvas = document.getElementById("bgCanvas");
-    const ctx = canvas.getContext("2d");
-    const cursor = document.getElementById("cursor");
+  const canvas = document.getElementById("bgCanvas");
+  const ctx = canvas.getContext("2d");
+  const cursor = document.getElementById("cursor");
 
-    function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
 
-    window.addEventListener("resize", resize);
-    resize();
+  window.addEventListener("resize", resize);
+  resize();
 
-    let mouse = { x: window.innerWidth/2, y: window.innerHeight/2 };
+  let mouse = { x: window.innerWidth/2, y: window.innerHeight/2 };
 
-    document.addEventListener("mousemove", (e) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-      cursor.style.left = e.clientX + "px";
-      cursor.style.top = e.clientY + "px";
-    });
+  document.addEventListener("mousemove", (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    cursor.style.left = e.clientX + "px";
+    cursor.style.top = e.clientY + "px";
+  });
 
-    document.addEventListener("mousedown", () => {
-      cursor.style.transform = "translate(-50%, -50%) scale(0.7)";
-    });
+  document.addEventListener("mousedown", () => {
+    cursor.style.transform = "translate(-50%, -50%) scale(0.7)";
+  });
 
-    document.addEventListener("mouseup", () => {
-      cursor.style.transform = "translate(-50%, -50%) scale(1)";
-    });
+  document.addEventListener("mouseup", () => {
+    cursor.style.transform = "translate(-50%, -50%) scale(1)";
+  });
 
-    const spacing = 40;
+  const spacing = 40;
+  const maxDist = 220;
 
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      for (let x = 0; x < canvas.width; x += spacing) {
-        for (let y = 0; y < canvas.height; y += spacing) {
+    for (let x = 0; x < canvas.width; x += spacing) {
+      for (let y = 0; y < canvas.height; y += spacing) {
 
-          const dx = mouse.x - x;
-          const dy = mouse.y - y;
-          const distance = Math.sqrt(dx*dx + dy*dy);
+        const dx = mouse.x - x;
+        const dy = mouse.y - y;
+        const distance = Math.sqrt(dx*dx + dy*dy);
 
-          const maxDist = 200;
-          const intensity = Math.max(0, 1 - distance / maxDist);
+        const intensity = Math.max(0, 1 - distance / maxDist);
 
-          const alpha = 0.08 + intensity * 0.7;
+        const alpha = 0.05 + intensity * 0.9;
+        const size = 1.2 + intensity * 3;
 
-          ctx.beginPath();
-          ctx.arc(x, y, 1.5 + intensity * 2.5, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(0, 255, 255, ${alpha})`;
-          ctx.fill();
-        }
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0, 255, 255, ${alpha})`;
+        ctx.fill();
       }
-
-      requestAnimationFrame(draw);
     }
 
-    draw();
+    requestAnimationFrame(draw);
+  }
 
-    const VERSION = "W.1.8";
-    const startup = document.getElementById('startupScreen');
-    const terms = document.getElementById('termsOverlay');
-    const update = document.getElementById('updateOverlay');
+  draw();
 
-    if (sessionStorage.getItem('startupShown')) {
-      startup.style.display = 'none';
-    } else {
-      sessionStorage.setItem('startupShown', 'true');
-    }
+  /* ===== VERSION / TERMS LOGIC ===== */
 
-    if (localStorage.getItem('acceptedVersion') !== VERSION) {
-      localStorage.removeItem('termsAccepted');
-      sessionStorage.removeItem('updateShown');
-    }
+  const VERSION = "W.1.8";
+  const startup = document.getElementById('startupScreen');
+  const terms = document.getElementById('termsOverlay');
+  const update = document.getElementById('updateOverlay');
 
-    window.addEventListener('load', () => {
-      if (!localStorage.getItem('termsAccepted')) {
-        terms.classList.remove('hidden');
-      } else if (!sessionStorage.getItem('updateShown')) {
-        update.classList.remove('hidden');
-      }
-    });
+  if (sessionStorage.getItem('startupShown')) {
+    startup.style.display = 'none';
+  } else {
+    sessionStorage.setItem('startupShown', 'true');
+  }
 
-    window.acceptTerms = function() {
-      localStorage.setItem('termsAccepted', 'true');
-      localStorage.setItem('acceptedVersion', VERSION);
-      terms.classList.add('hidden');
+  if (localStorage.getItem('acceptedVersion') !== VERSION) {
+    localStorage.removeItem('termsAccepted');
+    sessionStorage.removeItem('updateShown');
+  }
+
+  window.addEventListener('load', () => {
+    if (!localStorage.getItem('termsAccepted')) {
+      terms.classList.remove('hidden');
+    } else if (!sessionStorage.getItem('updateShown')) {
       update.classList.remove('hidden');
     }
-
-    window.closeUpdate = function() {
-      sessionStorage.setItem('updateShown', 'true');
-      update.classList.add('hidden');
-    }
-
   });
-  </script>
+
+  window.acceptTerms = function() {
+    localStorage.setItem('termsAccepted', 'true');
+    localStorage.setItem('acceptedVersion', VERSION);
+    terms.classList.add('hidden');
+    update.classList.remove('hidden');
+  }
+
+  window.closeUpdate = function() {
+    sessionStorage.setItem('updateShown', 'true');
+    update.classList.add('hidden');
+  }
+
+});
+</script>
 
 </body>
 </html>
