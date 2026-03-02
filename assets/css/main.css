@@ -12,24 +12,19 @@ html, body {
   font-family: 'Orbitron', sans-serif;
   color: #ffffff;
   cursor: none;
-
-  /* Animated dotted cyber background */
-  background-color: #050505;
-  background-image:
-    radial-gradient(#00ffff14 1px, transparent 1px),
-    radial-gradient(#00ffff08 1px, transparent 1px);
-  background-size: 40px 40px, 80px 80px;
-  background-position: 0 0, 20px 20px;
-  animation: drift 35s linear infinite;
+  background: #050505;
+  overflow-x: hidden;
 }
 
-@keyframes drift {
-  from {
-    background-position: 0 0, 20px 20px;
-  }
-  to {
-    background-position: 200px 200px, 220px 220px;
-  }
+/* ===== Background Canvas Layer ===== */
+#bgCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* ===== Top Bar ===== */
@@ -65,7 +60,7 @@ html, body {
 
 /* ===== Home Layout ===== */
 .home {
-  height: calc(100vh - 60px);
+  min-height: calc(100vh - 60px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -88,6 +83,8 @@ html, body {
 .nav-grid {
   display: flex;
   gap: 40px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .nav-card {
@@ -104,6 +101,11 @@ html, body {
   transition: 0.3s ease;
 }
 
+.nav-card:hover {
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.9);
+  transform: translateY(-4px);
+}
+
 .title-gif {
   width: 180px;
   height: auto;
@@ -118,11 +120,6 @@ html, body {
   width: 48px;
   margin-bottom: 12px;
   filter: drop-shadow(0 0 10px #00ffff);
-}
-
-.nav-card:hover {
-  box-shadow: 0 0 30px rgba(0, 255, 255, 0.9);
-  transform: translateY(-4px);
 }
 
 /* ===== Footer ===== */
