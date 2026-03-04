@@ -23,14 +23,16 @@
     html, body {
       height: 100%;
       margin: 0;
-      /* Background added here using your uploaded image */
-      background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
-                  url('image_46e6c0.png') no-repeat center center fixed;
-      background-size: cover;
+      /* Layered Background: 1. Dots, 2. Dark Overlay, 3. Image */
+      background: 
+        radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), 
+        linear-gradient(rgba(10, 10, 11, 0.75), rgba(10, 10, 11, 0.75)), 
+        url('image_46e6c0.png') no-repeat center center fixed;
+      background-size: 32px 32px, cover, cover;
       font-family: 'Inter', sans-serif;
       color: var(--text-main);
       overflow: hidden;
-      cursor: none; /* Hides real cursor */
+      cursor: none;
     }
 
     /* --- CUSTOM CURSOR STYLES --- */
@@ -54,7 +56,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 0 30px;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.85);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--card-border);
       z-index: 100;
@@ -134,7 +136,7 @@
       letter-spacing: 4px;
       margin-bottom: 50px;
       color: #fff;
-      text-shadow: 0 0 10px rgba(0,0,0,0.5);
+      text-shadow: 0 0 15px rgba(0,0,0,0.8);
     }
 
     .app-buttons {
@@ -157,11 +159,11 @@
       flex-direction: column;
       justify-content: center;
       min-height: 100px;
-      backdrop-filter: blur(5px);
+      backdrop-filter: blur(8px);
     }
 
     .app-card:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.08);
       border-color: var(--accent);
       transform: translateY(-5px);
     }
@@ -182,7 +184,7 @@
       border-radius: 4px;
       color: var(--accent);
       border: 1px solid var(--accent);
-      background: rgba(0,0,0,0.3);
+      background: rgba(0,0,0,0.5);
     }
 
     .app-view {
