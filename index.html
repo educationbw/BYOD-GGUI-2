@@ -31,7 +31,7 @@
       pointer-events: none;
     }
 
-    /* ===== CUSTOM CURSOR (MATCHING APP.HTML) ===== */
+    /* ===== CUSTOM CURSOR ===== */
     .custom-cursor {
       position: fixed;
       width: 18px;
@@ -138,9 +138,8 @@
       transform: translateY(-1px);
     }
 
-    .hidden { display: none; }
+    .hidden { display: none !important; }
 
-    /* Hide real cursor on interactive elements */
     a, button, .nav-card {
       cursor: none !important;
     }
@@ -176,9 +175,9 @@ The creators and contributors are not responsible for consequences arising from 
 
 <div class="overlay hidden" id="updateOverlay">
   <div class="box">
-    <div class="box-title">Welcome to Version W.1.8</div>
+    <div class="box-title">Welcome to Version W.1.9.1</div>
     <div class="box-text" style="text-align:center">
-      • Extras Page added
+      • Reworked UI
     </div>
     <button class="box-btn" onclick="closeUpdate()">Continue</button>
   </div>
@@ -212,21 +211,32 @@ The creators and contributors are not responsible for consequences arising from 
 </main>
 
 <footer class="footer">
-  <span>G.GUI Project • Version W.1.8</span>
+  <span>G.GUI Project • Version W.1.9.1</span>
 </footer>
 
 <script>
+// --- VERSION CONTROL ---
+const currentVersion = "1.9.1"; // Change this to trigger popups for everyone again
+
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("bgCanvas");
   const ctx = canvas.getContext("2d");
   const cursor = document.getElementById("cursor");
   const startupScreen = document.getElementById("startupScreen");
+  const termsOverlay = document.getElementById("termsOverlay");
 
-  // --- STARTUP LOGIC: Only show once per session ---
+  // --- STARTUP LOGIC ---
   if (sessionStorage.getItem('visited')) {
     startupScreen.style.display = 'none';
   } else {
     sessionStorage.setItem('visited', 'true');
+  }
+
+  // --- VERSION & TERMS CHECK ---
+  const savedVersion = localStorage.getItem('ggui_version');
+  if (savedVersion !== currentVersion) {
+    // Show terms if version mismatch
+    termsOverlay.classList.remove('hidden');
   }
 
   // --- CANVAS RESIZE ---
@@ -304,8 +314,16 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Modal Actions
-function acceptTerms() { document.getElementById('termsOverlay').classList.add('hidden'); }
-function closeUpdate() { document.getElementById('updateOverlay').classList.add('hidden'); }
+function acceptTerms() { 
+  document.getElementById('termsOverlay').classList.add('hidden');
+  document.getElementById('updateOverlay').classList.remove('hidden');
+}
+
+function closeUpdate() { 
+  document.getElementById('updateOverlay').classList.add('hidden');
+  // Store version so they don't see it again until you update currentVersion
+  localStorage.setItem('ggui_version', currentVersion);
+}
 </script>
 
 </body>
