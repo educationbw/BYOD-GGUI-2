@@ -11,7 +11,7 @@ This repository hosts the website for SchoolsOfEasternNevada. The site can be ho
 - [Website](#Website)
 - [Deployment (Vercel / Netlify)](#Deployment)
 - [Running Locally](#RunLocal)
-- Custom Domains With GitHub Pages
+- [Custom Domains With GitHub Pages](##Custom Domains With GitHub Pages)
 
 ---
 
