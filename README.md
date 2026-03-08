@@ -68,13 +68,17 @@ Netlify will automatically host the website.
 We can't list all of the hosting services here, so here is a general guide on how to deploy using a hosting serice:
 
 1. Find out if you can import the repository directly for from Github
-      If your answer is yes, continue with the "A" steps below
-      If your answer is no, continue with the "B" steps below
+   - If your answer is yes, continue with the "A" steps below
+    -  If your answer is no, continue with the "B" steps below
 
 2A. Choose the forked repository you want to host
+-
 2B. Download the source code for G.GUI through Github
+-
 3A. Deploy the website - YOUR DONE
+-
 3B. Fix any folder structure issues, and add any required files that hosting service requires
+-
 4B. Deploy the website - YOUR DONE
 
 # RunLocally
