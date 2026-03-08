@@ -11,22 +11,122 @@
   <link rel="stylesheet" href="assets/css/pages.css">
 
   <style>
+    :root {
+      --side-width: 80px;
+      --side-expand: 240px;
+    }
+
     html, body {
       height: 100%;
       margin: 0;
       background: #000;
       font-family: 'Orbitron', sans-serif;
       overflow: hidden;
+      cursor: none;
+      transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
+    /* Force Font Fix */
+    button, a, span, h2, h3, div {
+      font-family: 'Orbitron', sans-serif !important;
+    }
+
+    #bgCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .static-bg-layer {
+      position: fixed;
+      inset: 0;
+      background: url('assets/img/bg-static.png') no-repeat center center;
+      background-size: cover;
+      display: none;
+      z-index: -1;
+    }
+    body.use-static .static-bg-layer { display: block; }
+    body.use-static #bgCanvas { display: none; }
+
+    /* Sidebar Logic */
+    body.sidebar-mode { padding-left: var(--side-width); }
+    body.sidebar-mode .side-nav { left: 0; }
+    body.sidebar-mode .top-bar { display: none !important; }
+
+    .side-nav {
+      position: fixed;
+      left: calc(var(--side-width) * -1.2);
+      top: 0;
+      bottom: 0;
+      width: var(--side-width);
+      background: rgba(5, 5, 5, 0.95);
+      border-right: 1px solid rgba(0, 255, 231, 0.3);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 15px;
+      gap: 15px;
+      z-index: 13000;
+      transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    .side-nav:hover { width: var(--side-expand); }
+    
+    .side-item {
+      width: 100%;
+      height: 50px;
+      border-radius: 12px;
+      background: #111;
+      display: flex;
+      align-items: center;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.2s ease;
+      cursor: none;
+      text-decoration: none;
+      padding: 0 13px;
+      white-space: nowrap;
+      color: #fff;
+    }
+    .side-item img, .side-item svg { width: 24px; height: 24px; min-width: 24px; }
+    .side-item span {
+      margin-left: 20px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .side-nav:hover .side-item span { opacity: 1; }
+    .side-item:hover { border-color: #00ffff; box-shadow: 0 0 15px #00ffff; transform: translateX(5px); }
+
+    /* Cursor Fix: High Z-Index */
+    .custom-cursor {
+      position: fixed;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #00ffff;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 20000; 
+      box-shadow: 0 0 12px #00ffffaa;
+      transition: transform 0.08s ease-out, width 0.2s, height 0.2s;
+    }
+    body.cursor-off { cursor: auto !important; }
+    body.cursor-off .custom-cursor { display: none !important; }
+
+    /* Page Content */
     .download-page {
+      position: relative;
       height: calc(100% - 60px);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 40px;
+      gap: 30px;
       text-align: center;
+      z-index: 1;
     }
 
     .download-title {
@@ -36,98 +136,239 @@
     }
 
     .download-btn {
-      padding: 24px 64px;
+      padding: 20px 50px;
       font-size: 18px;
       border-radius: 16px;
       border: 2px solid rgba(0,255,255,0.9);
       background: #050505;
       color: #9ffcff;
-      cursor: pointer;
+      cursor: none;
       text-decoration: none;
       box-shadow: 0 0 20px rgba(0,255,255,0.6);
       transition: 0.25s ease;
     }
-
     .download-btn:hover {
       box-shadow: 0 0 40px rgba(0,255,255,1);
       transform: translateY(-2px);
     }
 
     iframe {
+      border: 2px solid rgba(0, 255, 255, 0.3);
       border-radius: 12px;
-      box-shadow: 0 0 25px rgba(0,255,255,0.6);
+      box-shadow: 0 0 25px rgba(0,255,255,0.4);
     }
+
+    /* Settings UI */
+    .settings-panel {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 350px;
+      height: 100%;
+      background: rgba(5, 5, 5, 0.98);
+      backdrop-filter: blur(20px);
+      border-left: 2px solid #00ffff;
+      z-index: 16000;
+      transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+    .settings-panel.open { right: 0; }
+    .close-settings-btn { background: none; border: none; color: #fff; font-size: 32px; cursor: none !important; }
+    .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; background-color: #333; transition: .4s; border-radius: 22px; cursor: none !important; }
+    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: #00ffff; }
+    input:checked + .slider:before { transform: translateX(22px); }
   </style>
 </head>
 
+<body>
+
+<canvas id="bgCanvas"></canvas>
+<div class="static-bg-layer" id="staticBg"></div>
 <div class="custom-cursor" id="cursor"></div>
 
+<nav class="side-nav" id="sideNav">
+  <a href="index.html" class="side-item"><img src="assets/img/controller.svg" alt="Home"><span>Home</span></a>
+  <a href="multi.html" class="side-item"><img src="assets/img/grid.svg" alt="Multi"><span>Mlti-Gme Websites</span></a>
+  <a href="single.html" class="side-item"><img src="assets/img/square.svg" alt="Single"><span>1-Gme Websites</span></a>
+  <a href="app.html" class="side-item"><img src="assets/img/square.svg" alt="Apps"><span>Apps</span></a>
+  <a href="extras.html" class="side-item"><img src="assets/img/extras.png" alt="Extras"><span>Extras</span></a>
+  <a href="resources.html" class="side-item"><img src="assets/img/resources.png" alt="Res"><span>Resources</span></a>
+  <a href="G.GUI - Games/game.html" class="side-item"><img src="assets/img/game.png" alt="Games"><span>Games</span></a>
+  <div style="flex-grow: 1;"></div>
+  <button class="side-item" id="sideSettingsBtn" style="background:#111; color: white;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+      <circle cx="12" cy="12" r="3"></circle>
+    </svg>
+    <span>Settings</span>
+  </button>
+</nav>
+
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-header" style="display:flex; justify-content: space-between; align-items: center;">
+    <h2 style="color: #00ffff; font-size: 20px; margin:0;">SETTINGS</h2>
+    <button class="close-settings-btn" id="closeSettings">&times;</button>
+  </div>
+  
+  <div class="settings-section">
+    <h3 style="color:#9ffcff; font-size:12px; opacity:0.6; letter-spacing:2px; margin-bottom:10px;">LAYOUT</h3>
+    <div style="display:flex; justify-content: space-between; align-items:center;">
+      <span>Sidebar Mode</span>
+      <label class="switch">
+        <input type="checkbox" id="sidebarToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <h3 style="color:#9ffcff; font-size:12px; opacity:0.6; letter-spacing:2px; margin-bottom:10px;">PERSONALIZATION</h3>
+    <div style="display:flex; justify-content: space-between; align-items:center;">
+      <span>Custom Cursor</span>
+      <label class="switch">
+        <input type="checkbox" id="cursorToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+</div>
+
+<header class="top-bar">
+  <div class="top-left">
+    <a href="resources.html" class="controller-home">
+      <img src="assets/img/controller.svg" alt="Back">
+    </a>
+  </div>
+  <div style="display:flex; gap: 15px; align-items:center;">
+    <button id="openSettings" style="background:none; border:none; color:white; cursor:none;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    </button>
+    <a href="https://discord.gg/AC5nAtdd" target="_blank" class="discord-btn">Discord</a>
+  </div>
+</header>
+
+<main class="download-page">
+  <div class="download-title">G.GUI-UGS Launcher</div>
+  <a href="https://1drv.ms/u/c/8cbe5efae23a6d4f/IQARYvlgzgijSZzj8tAZHhMBARtPGxslKN_fTltMjzcDYlw?download=1" class="download-btn">
+    Download G.GUI
+  </a>
+  <iframe src="https://www.youtube.com/embed/0qgqJh1MnlY" width="600" height="300" frameborder="0" allowfullscreen></iframe>
+</main>
+
+<footer class="footer">
+  <span>G.GUI Project • Launcher</span>
+</footer>
+
 <script>
+  const canvas = document.getElementById("bgCanvas");
+  const ctx = canvas.getContext("2d");
   const cursor = document.getElementById("cursor");
+  let mouse = { x: -1000, y: -1000 };
+
+  function applySettings(s) {
+    if(!s) return;
+    document.body.classList.toggle('cursor-off', !s.cursor);
+    document.body.classList.toggle('sidebar-mode', !!s.sidebar);
+    document.body.classList.toggle('use-static', s.bg === 'static');
+    resize();
+  }
+
+  function saveOptions() {
+    const settings = {
+      cursor: document.getElementById('cursorToggle').checked,
+      sidebar: document.getElementById('sidebarToggle').checked,
+      bg: document.body.classList.contains('use-static') ? 'static' : 'dots'
+    };
+    localStorage.setItem('ggui_settings', JSON.stringify(settings));
+    applySettings(settings);
+  }
+
+  function loadOptions() {
+    const saved = localStorage.getItem('ggui_settings');
+    if(saved) {
+      const s = JSON.parse(saved);
+      document.getElementById('cursorToggle').checked = s.cursor;
+      document.getElementById('sidebarToggle').checked = s.sidebar;
+      applySettings(s);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadOptions();
+    resize();
+    draw();
+
+    const openBtns = ['openSettings', 'sideSettingsBtn'];
+    openBtns.forEach(id => {
+      document.getElementById(id)?.addEventListener('click', () => 
+        document.getElementById('settingsPanel').classList.add('open'));
+    });
+
+    document.getElementById('closeSettings').addEventListener('click', () => 
+      document.getElementById('settingsPanel').classList.remove('open'));
+
+    document.getElementById('cursorToggle').addEventListener('change', saveOptions);
+    document.getElementById('sidebarToggle').addEventListener('change', saveOptions);
+
+    refreshInteractiveListeners();
+  });
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener("resize", resize);
 
   document.addEventListener("mousemove", (e) => {
+    mouse.x = document.body.classList.contains('sidebar-mode') ? e.clientX - 80 : e.clientX;
+    mouse.y = e.clientY;
     cursor.style.left = e.clientX + "px";
     cursor.style.top = e.clientY + "px";
   });
 
-  document.addEventListener("mousedown", () => {
-    cursor.style.transform = "translate(-50%, -50%) scale(0.7)";
-  });
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const spacing = 40;
+    for (let x = 0; x < canvas.width; x += spacing) {
+      for (let y = 0; y < canvas.height; y += spacing) {
+        const dx = mouse.x - x;
+        const dy = mouse.y - y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        let size = dist < 150 ? 1.5 + (1 - dist/150) * 4 : 1.5;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0, 255, 255, 0.12)";
+        ctx.fill();
+      }
+    }
+    requestAnimationFrame(draw);
+  }
 
-  document.addEventListener("mouseup", () => {
-    cursor.style.transform = "translate(-50%, -50%) scale(1)";
-  });
-
-  const interactive = document.querySelectorAll("a, button, .nav-card");
-
-  interactive.forEach(el => {
-    el.addEventListener("mouseenter", () => {
-      cursor.style.width = "28px";
-      cursor.style.height = "28px";
-      cursor.style.boxShadow = "0 0 20px #00ffff";
+  function refreshInteractiveListeners() {
+    const interactive = document.querySelectorAll("a, button, .download-btn, .side-item, .slider");
+    interactive.forEach(el => {
+      el.addEventListener("mouseenter", () => {
+        cursor.style.width = "28px";
+        cursor.style.height = "28px";
+        cursor.style.boxShadow = "0 0 20px #00ffff";
+      });
+      el.addEventListener("mouseleave", () => {
+        cursor.style.width = "18px";
+        cursor.style.height = "18px";
+        cursor.style.boxShadow = "0 0 12px #00ffffaa";
+      });
     });
-    el.addEventListener("mouseleave", () => {
-      cursor.style.width = "18px";
-      cursor.style.height = "18px";
-      cursor.style.boxShadow = "0 0 12px #00ffffaa";
-    });
-  });
+  }
 </script>
-  
-<body>
-
-  <!-- TOP BAR -->
-  <header class="top-bar">
-    <div class="top-left">
-      <a href="index.html" class="controller-home">
-        <img src="assets/img/controller.svg" alt="Home">
-      </a>
-    </div>
-
-    <a href="https://discord.gg/AC5nAtdd" target="_blank" class="discord-btn">
-      Discord
-    </a>
-  </header>
-
-  <!-- MAIN CONTENT -->
-  <main class="download-page">
-    <div class="download-title">G.GUI-UGS Launcher</div>
-
-  <a href="https://1drv.ms/u/c/8cbe5efae23a6d4f/IQARYvlgzgijSZzj8tAZHhMBARtPGxslKN_fTltMjzcDYlw?download=1" class="download-btn">
-  Download G.GUI
-  </a>
-
-
-    
-    <iframe src="https://www.youtube.com/embed/0qgqJh1MnlY?si=UAsEFBNCV8P_R4cs"
-            width="600"
-            height="300">
-    </iframe>
-  </main>
-
-  <footer class="footer">
-    <span>G.GUI Project • Launcher</span>
-  </footer>
 
 </body>
 </html>

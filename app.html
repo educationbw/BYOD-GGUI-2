@@ -18,32 +18,49 @@
       --card-border: rgba(255, 255, 255, 0.1);
       --accent: #00ffe7;
       --text-main: #e0e0e0;
+      --side-width: 80px;
+      --side-expand: 240px;
     }
 
     html, body {
       height: 100%;
       margin: 0;
-      background: #000; /* Match index black */
+      background: #000;
       font-family: 'Inter', sans-serif;
       color: var(--text-main);
       overflow: hidden;
       cursor: none;
+      transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* ===== CANVAS BACKGROUND (MATCHING INDEX) ===== */
+    /* Cursor Off Support */
+    body.cursor-off { cursor: auto !important; }
+    body.cursor-off .custom-cursor { display: none; }
+    body.cursor-off a, body.cursor-off button, body.cursor-off .app-card, body.cursor-off .icon-btn, body.cursor-off .side-item { cursor: auto !important; }
+
     #bgCanvas {
       position: fixed;
-      top: 64px; /* below app top-bar */
+      top: 64px;
       left: 0;
       width: 100%;
       height: calc(100vh - 64px);
       z-index: 0;
       pointer-events: none;
-      /* Using your image as a very subtle base layer */
       background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), 
                   url('image_46e6c0.png') no-repeat center center;
       background-size: cover;
     }
+
+    .static-bg-layer {
+      position: fixed;
+      inset: 64px 0 0 0;
+      background: url('assets/img/bg-static.png') no-repeat center center;
+      background-size: cover;
+      display: none;
+      z-index: -1;
+    }
+    body.use-static .static-bg-layer { display: block; }
+    body.use-static #bgCanvas { display: none; }
 
     .custom-cursor {
       width: 18px;
@@ -52,10 +69,123 @@
       border-radius: 50%;
       position: fixed;
       pointer-events: none;
-      z-index: 9999;
+      z-index: 15000;
       transform: translate(-50%, -50%);
-      transition: width 0.2s, height 0.2s, transform 0.1s;
+      transition: width 0.2s, height 0.2s, transform 0.1s, opacity 0.3s;
       box-shadow: 0 0 12px var(--accent);
+    }
+
+    /* Sidebar UI - Fixed Alignment */
+    .side-nav {
+      position: fixed;
+      left: calc(var(--side-width) * -1.2);
+      top: 0;
+      bottom: 0;
+      width: var(--side-width);
+      background: rgba(5, 5, 5, 0.95);
+      border-right: 1px solid rgba(0, 255, 231, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* Center items when collapsed */
+      padding: 20px 0;
+      gap: 15px;
+      z-index: 13000;
+      transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    
+    .side-nav:hover { 
+      width: var(--side-expand); 
+      align-items: flex-start; 
+    }
+
+    .side-item {
+      width: 50px; /* Base width for centering */
+      height: 50px;
+      min-height: 50px;
+      border-radius: 12px;
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center; /* Center icon when collapsed */
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.2s ease;
+      cursor: none;
+      text-decoration: none;
+      white-space: nowrap;
+      margin: 0 auto;
+    }
+
+    .side-nav:hover .side-item {
+      width: calc(100% - 30px);
+      margin: 0 15px;
+      justify-content: flex-start;
+      padding-left: 13px;
+    }
+
+    .side-item img, .side-item svg { width: 24px; height: 24px; min-width: 24px; }
+    
+    .side-item span {
+      margin-left: 20px;
+      font-family: 'Orbitron';
+      font-size: 14px;
+      color: #fff;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+      display: none;
+    }
+    
+    .side-nav:hover .side-item span { 
+      opacity: 1; 
+      display: block;
+    }
+
+    .side-item:hover { 
+      border-color: var(--accent); 
+      box-shadow: 0 0 15px var(--accent); 
+      transform: translateX(5px); 
+    }
+
+    /* Fixed Settings Button Alignment */
+    #sideSettingsBtn {
+      margin-top: auto; 
+      padding: 0;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: #111;
+    }
+
+    .side-nav:hover #sideSettingsBtn {
+      justify-content: flex-start;
+      padding-left: 13px;
+    }
+
+    /* Mode Switching */
+    body.sidebar-mode { padding-left: var(--side-width); }
+    body.sidebar-mode .side-nav { left: 0; }
+    body.sidebar-mode .top-bar { display: none !important; }
+    body.sidebar-mode #bgCanvas, body.sidebar-mode .static-bg-layer, body.sidebar-mode .app-shell, body.sidebar-mode .app-view { 
+      left: var(--side-width); 
+      width: calc(100% - var(--side-width)); 
+      top: 0; 
+      height: 100vh; 
+    }
+
+    /* Icon Styling */
+    .icon-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px;
+      transition: transform 0.3s ease, color 0.3s ease, filter 0.3s ease;
+    }
+    .icon-btn:hover {
+      color: var(--accent);
+      filter: drop-shadow(0 0 8px var(--accent));
     }
 
     .top-bar {
@@ -77,7 +207,7 @@
       right: 0;
       bottom: 0;
       overflow-y: auto;
-      z-index: 1; /* Above canvas */
+      z-index: 1;
       background: transparent;
     }
 
@@ -126,7 +256,6 @@
       background: rgba(0, 255, 231, 0.05);
       border-color: var(--accent);
       transform: translateY(-5px);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
     .alt-badge {
@@ -139,6 +268,7 @@
       color: var(--accent);
       border: 1px solid var(--accent);
       background: rgba(0,0,0,0.6);
+      cursor: pointer !important;
     }
 
     #backBtn {
@@ -153,19 +283,7 @@
       margin-right: 20px;
       text-transform: uppercase;
       letter-spacing: 1px;
-    }
-
-    .discord-btn {
-      padding: 8px 20px;
-      border: 2px solid var(--accent);
-      border-radius: 30px;
-      color: #fff;
-      text-decoration: none;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 12px;
-      font-weight: bold;
-      text-transform: uppercase;
-      box-shadow: 0 0 10px rgba(0, 255, 231, 0.2);
+      cursor: pointer !important;
     }
 
     .app-view {
@@ -185,8 +303,9 @@
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
+      z-index: 10000;
       backdrop-filter: blur(5px);
+      cursor: auto !important;
     }
 
     .alt-popup-content {
@@ -208,23 +327,119 @@
       padding: 15px;
       border-radius: 8px;
       transition: 0.2s;
+      cursor: pointer !important;
     }
+
+    /* SETTINGS PANEL */
+    .settings-panel {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 350px;
+      height: 100%;
+      background: rgba(5, 5, 5, 0.95);
+      backdrop-filter: blur(20px);
+      border-left: 2px solid var(--accent);
+      z-index: 16000;
+      transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+      cursor: auto !important;
+    }
+    .settings-panel.open { right: 0; }
+    .close-settings-btn { background: none; border: none; color: #fff; font-size: 32px; cursor: pointer !important; }
+    .settings-header h2 { font-size: 20px; color: var(--accent); font-family: 'Orbitron'; }
+    .settings-section h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; color: #9ffcff; opacity: 0.6; font-family: 'Orbitron'; }
+    .setting-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; background-color: #333; transition: .4s; border-radius: 22px; cursor: pointer !important; }
+    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--accent); }
+    input:checked + .slider:before { transform: translateX(22px); }
+    .bg-opt { border: 2px solid transparent; border-radius: 12px; background: #111; padding: 8px; text-align: center; transition: 0.2s; cursor: pointer !important;}
+    .bg-opt.active { border-color: var(--accent); box-shadow: 0 0 10px var(--accent); }
   </style>
 </head>
 
 <body>
 
 <canvas id="bgCanvas"></canvas>
+<div class="static-bg-layer" id="staticBg"></div>
 <div class="custom-cursor" id="cursor"></div>
+
+<nav class="side-nav" id="sideNav">
+  <a href="index.html" class="side-item"><img src="assets/img/controller.svg" alt="Home"><span>Home</span></a>
+  <a href="multi.html" class="side-item"><img src="assets/img/grid.svg" alt="Multi"><span>Mlti-Gme Websites</span></a>
+  <a href="single.html" class="side-item"><img src="assets/img/square.svg" alt="Single"><span>1-Gme Websites</span></a>
+  <a href="app.html" class="side-item"><img src="assets/img/square.svg" alt="Apps"><span>Apps</span></a>
+  <a href="extras.html" class="side-item"><img src="assets/img/extras.png" alt="Extras"><span>Extras</span></a>
+  <a href="resources.html" class="side-item"><img src="assets/img/resources.png" alt="Res"><span>Resources</span></a>
+  <a href="G.GUI - Games/game.html" class="side-item"><img src="assets/img/game.png" alt="Games"><span>Games</span></a>
+  <div style="flex-grow: 1;"></div>
+  <button class="side-item icon-btn" id="sideSettingsBtn">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    <span>Settings</span>
+  </button>
+</nav>
+
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-header">
+    <h2>SETTINGS</h2>
+    <button class="close-settings-btn" id="closeSettings">&times;</button>
+  </div>
+  <div class="settings-section">
+    <h3>Layout</h3>
+    <div class="setting-item">
+      <span>Sidebar Mode</span>
+      <label class="switch">
+        <input type="checkbox" id="sidebarToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+  <div class="settings-section">
+    <h3>Personalization</h3>
+    <div class="setting-item">
+      <span>Custom Cursor</span>
+      <label class="switch">
+        <input type="checkbox" id="cursorToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div style="margin-top:10px;">
+      <span style="font-size: 13px; display: block; margin-bottom: 10px;">Background Mode</span>
+      <div class="bg-preview-container">
+        <div class="bg-opt active" id="optDots"><span>Dotted</span></div>
+        <div class="bg-opt" id="optStatic"><span>Static</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="settings-section">
+    <h3>Cloaking</h3>
+    <p style="font-size: 11px; opacity: 0.6;">Cloaking is managed from the Home page.</p>
+  </div>
+</div>
 
 <header class="top-bar">
   <div style="display: flex; align-items: center;">
-    <button id="backBtn" onclick="closeApp()">← BACK</button>
+    <button id="backBtn">← BACK</button>
     <a href="index.html" class="controller-home" title="Home">
       <img src="assets/img/controller.svg" alt="Home">
     </a>
   </div>
-  <a href="https://discord.gg/AC5nAtdd" target="_blank" class="discord-btn">Discord</a>
+  <div style="display: flex; gap: 15px; align-items: center;">
+    <button id="openSettings" class="icon-btn" title="Settings">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+    </button>
+    <a href="https://discord.gg/AC5nAtdd" target="_blank" class="discord-btn">Discord</a>
+  </div>
 </header>
 
 <main class="app-shell">
@@ -241,24 +456,29 @@
         <div class="alt-badge" onclick="openAlt(event, this.parentElement)">ALT</div>
       </div>
       <div class="app-card" onclick="launchApp('https://abc.school.dovereducation.org/')"><span>Nebulo</span></div>
-      <div class="app-card" onclick="launchApp('https://silvervalethegoat.graphicon.ru/')"><span>Zepto Learning 2</span></div>
-      <div class="app-card" onclick="launchApp('https://pictures.about-anthony.com/')"><span>Infamous</span></div>
+      <div class="app-card" onclick="launchApp('https://help.getwellnessconnect.com/')"><span>Zepto Learning 2</span></div>
+      <div class="app-card" onclick="launchApp('https://clever.com.tongdailyve.com/')"><span>Infamous</span></div>
       <div class="app-card" onclick="launchApp('https://rooms.verandahotels.com/')"><span>Void Network</span></div>
-      <div class="app-card" onclick="launchApp('https://vcsayt.blanksheetstudios.com/')"><span>Rammerhead</span></div>
+      <div class="app-card" onclick="launchApp('https://vcsayt.blanksheetstudios.com/')" data-alt="https://babapapa.001-lab.space/">
+        <span>Rammerhead</span>
+        <div class="alt-badge" onclick="openAlt(event, this.parentElement)">ALT</div>
+      </div>
       <div class="app-card" onclick="launchApp('https://math-help.blanksheetstudios.com/')"><span>Glint Browser</span></div>
-      <div class="app-card" onclick="launchApp('https://family.1382.hotelconsuladoinn.com/')"><span>Luminal OS</span></div>
+      <div class="app-card" onclick="launchApp('https://nirprobytes.riseelevetors.com/')"><span>LuminalOS</span></div>
       <div class="app-card" onclick="launchApp('https://mathtoolseducation.allastella.it/')" data-alt="https://math5.tcloud.my/">
         <span>OverCloaked</span>
         <div class="alt-badge" onclick="openAlt(event, this.parentElement)">ALT</div>
       </div>
-      <div class="app-card" onclick="launchApp('https://mall-shopping.egevad.se/')"><span>Galaxy V6</span></div>
-      <div class="app-card" onclick="launchApp('https://joinergeometry.kathmandubiz.com/')"><span>Interstellar</span></div>
+      <div class="app-card" onclick="launchApp('https://invest.orlandobestinvest.com/onboarding/')"><span>Galaxy V6</span></div>
+
+      <div class="app-card" onclick="launchApp('https://sound.djalexbeats.co.uk/')"><span>Interstellar</span></div>
       <div class="app-card" onclick="launchApp('https://educationforindia.com/')"><span>Vapor V4</span></div>
       <div class="app-card" onclick="launchApp('https://cheese-tutorial-culinary-sciences.b-cdn.net/')"><span>Cheesy</span></div>
       <div class="app-card" onclick="launchApp('https://subscribevcsa.slowfactory.es/')"><span>Boredom V2</span></div>
       <div class="app-card" onclick="launchApp('http://math.nei.cl/')"><span>Reds Exploits</span></div>
       <div class="app-card" onclick="launchApp('https://travel-earth4.hotelconsuladoinn.com/')"><span>EarthHub</span></div>
       <div class="app-card" onclick="launchApp('https://educationalarts.polden.com/')"><span>Bromine</span></div>
+      <div class="app-card" onclick="launchApp('games/Axiom.html')"><span>Axiom</spawn></div>
     </div>
   </div>
 
@@ -276,20 +496,87 @@
   const ctx = canvas.getContext("2d");
   const cursor = document.getElementById("cursor");
 
-  // --- CANVAS RESIZE ---
   function resize() {
     canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight - 64;
+    canvas.height = window.innerHeight;
   }
   window.addEventListener("resize", resize);
-  resize();
+
+  // SHARED LOGIC
+  function applySettings(s) {
+    if(!s) return;
+    if(s.cursor === false) document.body.classList.add('cursor-off');
+    else document.body.classList.remove('cursor-off');
+
+    if(s.sidebar === true) document.body.classList.add('sidebar-mode');
+    else document.body.classList.remove('sidebar-mode');
+
+    if(s.bg === 'static') {
+      document.body.classList.add('use-static');
+      document.getElementById('optStatic').classList.add('active');
+      document.getElementById('optDots').classList.remove('active');
+    } else {
+      document.body.classList.remove('use-static');
+      document.getElementById('optDots').classList.add('active');
+      document.getElementById('optStatic').classList.remove('active');
+    }
+    resize();
+  }
+
+  function loadOptions() {
+    const saved = localStorage.getItem('ggui_settings');
+    if(saved) {
+      const s = JSON.parse(saved);
+      if(document.getElementById('cursorToggle')) document.getElementById('cursorToggle').checked = s.cursor;
+      if(document.getElementById('sidebarToggle')) document.getElementById('sidebarToggle').checked = s.sidebar;
+      applySettings(s);
+    }
+  }
+
+  function saveOptions() {
+    const settings = {
+      cursor: document.getElementById('cursorToggle').checked,
+      sidebar: document.getElementById('sidebarToggle').checked,
+      bg: document.body.classList.contains('use-static') ? 'static' : 'dots'
+    };
+    localStorage.setItem('ggui_settings', JSON.stringify(settings));
+    applySettings(settings);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadOptions();
+    draw();
+
+    // Settings logic
+    const openIds = ['openSettings', 'sideSettingsBtn'];
+    openIds.forEach(id => {
+      const btn = document.getElementById(id);
+      if(btn) btn.addEventListener('click', () => document.getElementById('settingsPanel').classList.add('open'));
+    });
+
+    document.getElementById('closeSettings').addEventListener('click', () => {
+      document.getElementById('settingsPanel').classList.remove('open');
+    });
+
+    document.getElementById('cursorToggle').addEventListener('change', saveOptions);
+    document.getElementById('sidebarToggle').addEventListener('change', saveOptions);
+    document.getElementById('optDots').addEventListener('click', () => {
+        document.body.classList.remove('use-static');
+        saveOptions();
+    });
+    document.getElementById('optStatic').addEventListener('click', () => {
+        document.body.classList.add('use-static');
+        saveOptions();
+    });
+    document.getElementById('backBtn').addEventListener('click', closeApp);
+  });
 
   let mouse = { x: window.innerWidth/2, y: window.innerHeight/2 };
 
-  // --- CURSOR & MOUSE LOGIC ---
   document.addEventListener("mousemove", (e) => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY - 64;
+    const isSidebar = document.body.classList.contains('sidebar-mode');
+    mouse.x = isSidebar ? e.clientX - 80 : e.clientX;
+    mouse.y = isSidebar ? e.clientY : e.clientY - 64;
     cursor.style.left = e.clientX + "px";
     cursor.style.top = e.clientY + "px";
   });
@@ -303,7 +590,7 @@
   });
 
   function refreshCursorListeners() {
-    const interactive = document.querySelectorAll("a, button, .app-card, .alt-link-btn");
+    const interactive = document.querySelectorAll("a, button, .app-card, .alt-badge, .icon-btn, .side-item");
     interactive.forEach(el => {
       el.addEventListener("mouseenter", () => {
         cursor.style.width = "28px";
@@ -321,34 +608,6 @@
   }
   refreshCursorListeners();
 
-  // --- DOT ANIMATION (INDEX MATCH) ---
-  const spacing = 40;
-  const radius = 150;
-  const baseSize = 1.5;
-
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let x = 0; x < canvas.width; x += spacing) {
-      for (let y = 0; y < canvas.height; y += spacing) {
-        const dx = mouse.x - x;
-        const dy = mouse.y - y;
-        const distance = Math.sqrt(dx*dx + dy*dy);
-        let size = baseSize;
-        if (distance < radius) {
-          const intensity = 1 - (distance / radius);
-          size = baseSize + intensity * 4;
-        }
-        ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0, 255, 255, 0.15)";
-        ctx.fill();
-      }
-    }
-    requestAnimationFrame(draw);
-  }
-  draw();
-
-  // --- APP LOGIC ---
   function launchApp(url) {
     document.getElementById('appSelector').style.display = 'none';
     document.getElementById('appView').style.display = 'block';
@@ -371,7 +630,7 @@
     const links = altData.split(',');
     const popup = document.getElementById('altPopup');
     const content = document.getElementById('altContent');
-    content.innerHTML = '<h2 style="font-size:14px; margin-top:0; color:#666; font-family:Orbitron;">SELECT VERSION</h2>';
+    content.innerHTML = '<h2 style="font-size:14px; color:#666; font-family:Orbitron;">SELECT VERSION</h2>';
     links.forEach((link, index) => {
       const btn = document.createElement('button');
       btn.className = 'alt-link-btn';
@@ -379,20 +638,32 @@
       btn.onclick = () => launchApp(link.trim());
       content.appendChild(btn);
     });
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = "CANCEL";
-    closeBtn.className = "alt-link-btn";
-    closeBtn.style.marginTop = "10px";
-    closeBtn.style.color = "#666";
-    closeBtn.onclick = () => popup.style.display = 'none';
-    content.appendChild(closeBtn);
     popup.style.display = 'flex';
-    refreshCursorListeners();
   }
 
   window.onclick = function(event) {
     const popup = document.getElementById('altPopup');
     if (event.target == popup) popup.style.display = "none";
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const spacing = 40;
+    const radius = 150;
+    for (let x = 0; x < canvas.width; x += spacing) {
+      for (let y = 0; y < canvas.height; y += spacing) {
+        const dx = mouse.x - x;
+        const dy = mouse.y - y;
+        const distance = Math.sqrt(dx*dx + dy*dy);
+        let size = 1.5;
+        if (distance < radius) size = 1.5 + (1 - distance / radius) * 4;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0, 255, 255, 0.15)";
+        ctx.fill();
+      }
+    }
+    requestAnimationFrame(draw);
   }
 </script>
 

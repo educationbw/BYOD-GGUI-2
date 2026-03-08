@@ -13,17 +13,27 @@
   <style>
     :root {
       --accent: #00ffe7;
+      --side-width: 80px;
+      --side-expand: 240px;
     }
 
     body {
       background: #000;
       cursor: none;
+      transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* ===== CANVAS BACKGROUND ===== */
+    /* Standard cursor when overlays are active */
+    body.overlay-active {
+      cursor: auto !important;
+    }
+    body.overlay-active .custom-cursor {
+      display: none !important;
+    }
+
     #bgCanvas {
       position: fixed;
-      top: 60px; /* below navbar */
+      top: 60px;
       left: 0;
       width: 100%;
       height: calc(100vh - 60px);
@@ -31,7 +41,25 @@
       pointer-events: none;
     }
 
-    /* ===== CUSTOM CURSOR ===== */
+    .static-bg-layer {
+      position: fixed;
+      inset: 60px 0 0 0;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      display: none;
+      z-index: -1;
+    }
+
+    /* Updated Background State Logic */
+    body.use-static .static-bg-layer { display: block; background-image: url('assets/img/bg-static.png'); }
+
+    /* Hide canvas when static image is used */
+    body.use-static #bgCanvas { 
+      display: none !important; 
+    }
+
+    /* Custom Cursor Logic */
     .custom-cursor {
       position: fixed;
       width: 18px;
@@ -40,16 +68,45 @@
       border-radius: 50%;
       transform: translate(-50%, -50%);
       pointer-events: none;
-      z-index: 10000;
+      z-index: 15000;
       box-shadow: 0 0 12px var(--accent);
-      transition: width 0.2s, height 0.2s, background 0.2s, border 0.2s, transform 0.1s;
+      transition: width 0.2s, height 0.2s, background 0.2s, border 0.2s, transform 0.1s, opacity 0.3s;
+    }
+
+    body.cursor-off .custom-cursor { display: none !important; }
+    body.cursor-off { cursor: auto !important; }
+    body.cursor-off a, body.cursor-off button, body.cursor-off .nav-card, body.cursor-off .icon-btn, body.cursor-off .side-item { cursor: auto !important; }
+
+    /* Icon Button Styling */
+    .icon-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px;
+      transition: transform 0.3s ease, color 0.3s ease, filter 0.3s ease;
+    }
+
+    .icon-btn img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+    }
+
+    .icon-btn:hover {
+      color: var(--accent);
+      transform: rotate(45deg) scale(1.1);
+      filter: drop-shadow(0 0 8px var(--accent));
     }
 
     .startup-screen {
       position: fixed;
       inset: 0;
       background: #000;
-      z-index: 10000;
+      z-index: 12000;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -88,7 +145,7 @@
       inset: 0;
       background: rgba(0,0,0,0.75);
       backdrop-filter: blur(8px);
-      z-index: 9000;
+      z-index: 16000;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -110,6 +167,13 @@
       margin-bottom: 12px;
       color: #9ffcff;
       text-shadow: 0 0 18px #00ffff;
+    }
+
+    .box-title-img {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 15px;
+      filter: drop-shadow(0 0 10px rgba(0, 255, 231, 0.5));
     }
 
     .box-text {
@@ -140,20 +204,217 @@
 
     .hidden { display: none !important; }
 
-    a, button, .nav-card {
-      cursor: none !important;
+    /* ===== SETTINGS PANEL ===== */
+    .settings-panel {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 350px;
+      height: 100%;
+      background: rgba(5, 5, 5, 0.95);
+      backdrop-filter: blur(20px);
+      border-left: 2px solid var(--accent);
+      z-index: 14000;
+      transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+      cursor: auto !important;
+      overflow-y: auto;
     }
+
+    .settings-panel.open { right: 0; }
+    .settings-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 15px;
+    }
+    .settings-header h2 { font-size: 20px; color: var(--accent); text-shadow: 0 0 10px var(--accent); }
+    .close-settings-btn { background: none; border: none; color: #fff; font-size: 32px; cursor: pointer !important; line-height: 1; }
+    .settings-section h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; color: #9ffcff; opacity: 0.6; }
+    .setting-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer !important; inset: 0; background-color: #333; transition: .4s; border-radius: 22px; }
+    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--accent); }
+    input:checked + .slider:before { transform: translateX(22px); }
+    .bg-preview-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .bg-opt { border: 2px solid transparent; border-radius: 12px; background: #111; padding: 8px; text-align: center; cursor: pointer !important; transition: 0.2s; }
+    .bg-opt img { width: 100%; height: 50px; border-radius: 6px; object-fit: cover; margin-bottom: 5px; }
+    .bg-opt.active { border-color: var(--accent); box-shadow: 0 0 10px var(--accent); }
+    .cloak-input { width: 100%; background: #111; border: 1px solid rgba(255,255,255,0.2); padding: 12px; color: #fff; border-radius: 10px; margin-bottom: 10px; font-family: 'Orbitron'; font-size: 12px; }
+    .cloak-launch-btn { width: 100%; padding: 12px; background: var(--accent); color: #000; border: none; border-radius: 10px; font-weight: bold; font-family: 'Orbitron'; cursor: pointer !important; margin-bottom: 10px; }
+    .cloak-preset-btn { width: 100%; padding: 10px; background: #111; color: var(--accent); border: 1px solid var(--accent); border-radius: 10px; font-family: 'Orbitron'; font-size: 11px; cursor: pointer !important; transition: 0.2s; }
+    .cloak-preset-btn:hover { background: var(--accent); color: #000; }
+
+    /* Preset Grid */
+    .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+    .preset-card { background: #111; border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; cursor: pointer !important; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .preset-card:hover { border-color: var(--accent); transform: scale(1.05); }
+    .preset-card img { width: 32px; height: 32px; }
+    .preset-card span { font-size: 12px; color: #fff; }
+
+    /* ===== SIDEBAR UI ===== */
+    .side-nav {
+      position: fixed;
+      left: calc(var(--side-width) * -1.2);
+      top: 0;
+      bottom: 0;
+      width: var(--side-width);
+      background: rgba(5, 5, 5, 0.95);
+      border-right: 1px solid rgba(0, 255, 231, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 20px 15px;
+      padding-bottom: 25px; 
+      gap: 15px;
+      z-index: 13000;
+      transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-x: hidden;
+      overflow-y: auto; 
+    }
+
+    .side-nav:hover { width: var(--side-expand); }
+
+    .side-item {
+      width: 100%;
+      height: 50px;
+      min-height: 50px;
+      border-radius: 12px;
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.2s ease;
+      cursor: none;
+      text-decoration: none;
+      padding: 0 13px;
+      white-space: nowrap;
+      box-sizing: border-box; 
+    }
+
+    .side-item img { 
+      width: 24px; 
+      height: 24px; 
+      min-width: 24px;
+      object-fit: contain;
+    }
+
+    .side-item span {
+      margin-left: 20px;
+      font-family: 'Orbitron';
+      font-size: 14px;
+      color: #fff;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
+
+    .side-nav:hover .side-item span { opacity: 1; }
+
+    .side-item:hover { 
+      border-color: var(--accent); 
+      box-shadow: 0 0 15px var(--accent); 
+      transform: translateX(5px); 
+    }
+
+    /* Mode Switching Classes */
+    body.sidebar-mode { padding-left: var(--side-width); }
+    body.sidebar-mode .side-nav { left: 0; }
+    body.sidebar-mode .top-bar, body.sidebar-mode .nav-grid { display: none !important; }
+    body.sidebar-mode #bgCanvas { left: var(--side-width); width: calc(100% - var(--side-width)); top: 0; height: 100vh; }
   </style>
 </head>
 
 <body>
 
 <canvas id="bgCanvas"></canvas>
+<div class="static-bg-layer" id="staticBg"></div>
 <div class="custom-cursor" id="cursor"></div>
+
+<nav class="side-nav" id="sideNav">
+  <a href="index.html" class="side-item"><img src="assets/img/controller.svg" alt="Home"><span>Home</span></a>
+  <a href="multi.html" class="side-item"><img src="assets/img/grid.svg" alt="Multi"><span>Mlti-Gme Websites</span></a>
+  <a href="single.html" class="side-item"><img src="assets/img/square.svg" alt="Single"><span>1-Gme Websites</span></a>
+  <a href="app.html" class="side-item"><img src="assets/img/square.svg" alt="Apps"><span>Apps</span></a>
+  <a href="extras.html" class="side-item"><img src="assets/img/extras.png" alt="Extras"><span>Extras</span></a>
+  <a href="resources.html" class="side-item"><img src="assets/img/resources.png" alt="Res"><span>Resources</span></a>
+  <a href="G.GUI - Games/game.html" class="side-item"><img src="assets/img/game.png" alt="Games"><span>Games</span></a>
+  
+  <div style="flex-grow: 1;"></div>
+  
+  <button class="side-item" id="sideSettingsBtn" style="background:#111; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0 13px;">
+    <img src="assets/img/setting.png" alt="Settings">
+    <span>Settings</span>
+  </button>
+</nav>
 
 <div class="startup-screen" id="startupScreen">
   <div class="startup-logo">G.GUI</div>
   <div class="startup-sub">Loading the stuff</div>
+</div>
+
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-header">
+    <h2>SETTINGS</h2>
+    <button class="close-settings-btn" id="closeSettings">&times;</button>
+  </div>
+  <div class="settings-section">
+    <h3>Layout</h3>
+    <div class="setting-item">
+      <span>Sidebar Mode</span>
+      <label class="switch">
+        <input type="checkbox" id="sidebarToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+  <div class="settings-section">
+    <h3>Personalization</h3>
+    <div class="setting-item">
+      <span>Custom Cursor</span>
+      <label class="switch">
+        <input type="checkbox" id="cursorToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div style="margin-top:10px;">
+      <span style="font-size: 13px; display: block; margin-bottom: 10px;">Background Mode</span>
+      <div class="bg-preview-container">
+        <div class="bg-opt active" id="optDots">
+          <div style="height:50px; background:#000; display:flex; align-items:center; justify-content:center; border-radius:6px; margin-bottom:5px;">
+            <div style="width:4px; height:4px; background:var(--accent); border-radius:50%; box-shadow:0 0 5px var(--accent);"></div>
+          </div>
+          <span>Dotted</span>
+        </div>
+        <div class="bg-opt" id="optStatic">
+          <img src="assets/img/bg-static.png" alt="Static" onerror="this.src='https://via.placeholder.com/100x50/111/00ffe7?text=Static'">
+          <span>Static</span>
+        </div>
+        </div>
+    </div>
+  </div>
+  <div class="settings-section">
+    <h3>Cloaking</h3>
+    <input type="text" id="cloakTitleInput" class="cloak-input" placeholder="Custom Tab Title">
+    <button class="cloak-launch-btn" id="cloakBtn">Launch about:blank</button>
+    <button class="cloak-preset-btn" id="openPresetsBtn">Cloaking Presets</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="presetOverlay">
+  <div class="box">
+    <div class="box-title">Cloak Presets</div>
+    <div class="preset-grid" id="presetGrid"></div>
+    <button class="box-btn" style="margin-top: 20px;" onclick="closePresets()">Close</button>
+  </div>
 </div>
 
 <div class="overlay hidden" id="termsOverlay">
@@ -168,6 +429,7 @@ The G.GUI Project is an open-source project intended solely for collecting and o
 
 2. Limitation of Liability  
 The creators and contributors are not responsible for consequences arising from use.
+
     </div>
     <button class="box-btn" onclick="acceptTerms()">Continue</button>
   </div>
@@ -175,9 +437,14 @@ The creators and contributors are not responsible for consequences arising from 
 
 <div class="overlay hidden" id="updateOverlay">
   <div class="box">
-    <div class="box-title">Welcome to Version W.1.9.1</div>
+    <img src="assets/img/V2.png" alt="Version 2.0" class="box-title-img">
     <div class="box-text" style="text-align:center">
-      • Reworked UI
+      ➤ Added "Games" button 
+      ➤ Added sidebar 
+      ➤ Custom cursor toggle 
+      ➤ Cloaking 
+      ➤ Settings
+      ➤ A bunch of other stuff
     </div>
     <button class="box-btn" onclick="closeUpdate()">Continue</button>
   </div>
@@ -185,19 +452,17 @@ The creators and contributors are not responsible for consequences arising from 
 
 <header class="top-bar">
   <div class="top-left">
-      <a href="index.html" class="controller-home">
-        <img src="assets/img/controller.svg" alt="Home">
-      </a>
+      <a href="index.html" class="controller-home"><img src="assets/img/controller.svg"></a>
       <a href="resources.html" class="top-link">Resources</a>
-    </div>
-
-  <a href="https://discord.gg/WrdQ6pfKnv" target="_blank" class="discord-btn">
-    Discord
-  </a>
+  </div>
+  <div style="display: flex; gap: 15px; align-items: center;">
+    <button id="openSettings" class="icon-btn"><img src="assets/img/setting.png"></button>
+    <a href="https://discord.gg/WrdQ6pfKnv" target="_blank" class="discord-btn">Discord</a>
+  </div>
 </header>
 
 <main class="home">
-  <img src="assets/img/controller.gif" class="title-gif" alt="Animated Banner">
+  <img src="assets/img/controller.gif" class="title-gif">
   <h1 class="site-title">G.GUI</h1>
   <p class="site-subtitle">Gamers GUI</p>
 
@@ -205,18 +470,70 @@ The creators and contributors are not responsible for consequences arising from 
     <a href="multi.html" class="nav-card"><img src="assets/img/grid.svg"><span>Multi-Game Websites</span></a>
     <a href="single.html" class="nav-card"><img src="assets/img/square.svg"><span>Single-Game Websites</span></a>
     <a href="app.html" class="nav-card"><img src="assets/img/square.svg"><span>Apps</span></a>
-    <a href="offlinegame.html" class="nav-card"><img src="assets/img/grid.svg"><span>Offline Games</span></a>
     <a href="extras.html" class="nav-card"><img src="assets/img/extras.png"><span>Extra Games</span></a>
+    <a href="G.GUI - Games/game.html" class="nav-card"><img src="assets/img/game.png"><span>Games</span></a>
   </div>
 </main>
 
 <footer class="footer">
-  <span>G.GUI Project • Version W.1.9.1</span>
+  <span>G.GUI Project • Version 2.0</span>
 </footer>
 
 <script>
-// --- VERSION CONTROL ---
-const currentVersion = "1.9.1"; // Change this to trigger popups for everyone again
+const currentVersion = "TEST1"; 
+const cloakPresets = [
+  { name: "Google", title: "Google", icon: "https://www.google.com/favicon.ico" },
+  { name: "Canvas", title: "Canvas", icon: "assets/img/instructure.png" },
+  { name: "Schoology", title: "Home | Schoology", icon: "assets/img/schoology.png" },
+  { name: "Google Classroom", title: "My Classroom", icon: "assets/img/gclassroom.png"},
+  { name: "Classlink", title: "Classlink Launchpad", icon: "assets/img/classlink.png" }
+];
+
+function resizeCanvas() {
+  const canvas = document.getElementById("bgCanvas");
+  if (!canvas) return;
+  canvas.width = window.innerWidth;
+  const isSidebar = document.body.classList.contains('sidebar-mode');
+  canvas.height = isSidebar ? window.innerHeight : window.innerHeight - 60;
+}
+
+function applySettings(s) {
+  if(!s) return;
+  document.body.classList.toggle('cursor-off', s.cursor === false);
+  document.body.classList.toggle('sidebar-mode', s.sidebar === true);
+  
+  // Only handle Dots and Static
+  document.body.classList.remove('use-static', 'use-grid', 'use-cool');
+  document.querySelectorAll('.bg-opt').forEach(opt => opt.classList.remove('active'));
+
+  if(s.bg === 'static') {
+    document.body.classList.add('use-static');
+    if(document.getElementById('optStatic')) document.getElementById('optStatic').classList.add('active');
+  } else {
+    if(document.getElementById('optDots')) document.getElementById('optDots').classList.add('active');
+  }
+  resizeCanvas();
+}
+
+function loadOptions() {
+  const saved = localStorage.getItem('ggui_settings');
+  if(saved) {
+    const s = JSON.parse(saved);
+    if(document.getElementById('cursorToggle')) document.getElementById('cursorToggle').checked = s.cursor;
+    if(document.getElementById('sidebarToggle')) document.getElementById('sidebarToggle').checked = s.sidebar;
+    applySettings(s);
+  }
+}
+
+function saveOptions() {
+  const settings = {
+    cursor: document.getElementById('cursorToggle') ? document.getElementById('cursorToggle').checked : true,
+    sidebar: document.getElementById('sidebarToggle') ? document.getElementById('sidebarToggle').checked : false,
+    bg: document.body.classList.contains('use-static') ? 'static' : 'dots'
+  };
+  localStorage.setItem('ggui_settings', JSON.stringify(settings));
+  applySettings(settings);
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("bgCanvas");
@@ -225,83 +542,42 @@ document.addEventListener("DOMContentLoaded", () => {
   const startupScreen = document.getElementById("startupScreen");
   const termsOverlay = document.getElementById("termsOverlay");
 
-  // --- STARTUP LOGIC ---
-  if (sessionStorage.getItem('visited')) {
-    startupScreen.style.display = 'none';
-  } else {
+  loadOptions();
+
+  if (!sessionStorage.getItem('visited')) {
     sessionStorage.setItem('visited', 'true');
+  } else {
+    startupScreen.style.display = 'none';
   }
 
-  // --- VERSION & TERMS CHECK ---
   const savedVersion = localStorage.getItem('ggui_version');
   if (savedVersion !== currentVersion) {
-    // Show terms if version mismatch
     termsOverlay.classList.remove('hidden');
+    document.body.classList.add('overlay-active');
   }
 
-  // --- CANVAS RESIZE ---
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight - 60;
-  }
-  window.addEventListener("resize", resize);
-  resize();
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
 
   let mouse = { x: window.innerWidth/2, y: window.innerHeight/2 };
-
-  // --- CURSOR CORE LOGIC ---
   document.addEventListener("mousemove", (e) => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY - 60;
+    const isSidebar = document.body.classList.contains('sidebar-mode');
+    mouse.x = isSidebar ? e.clientX - 80 : e.clientX;
+    mouse.y = isSidebar ? e.clientY : e.clientY - 60;
     cursor.style.left = e.clientX + "px";
     cursor.style.top = e.clientY + "px";
   });
 
-  document.addEventListener("mousedown", () => {
-    cursor.style.transform = "translate(-50%, -50%) scale(0.7)";
-  });
-
-  document.addEventListener("mouseup", () => {
-    cursor.style.transform = "translate(-50%, -50%) scale(1)";
-  });
-
-  // --- CURSOR HOVER INTERACTIONS ---
-  function refreshCursorListeners() {
-    const interactive = document.querySelectorAll("a, button, .nav-card, .box-btn");
-    interactive.forEach(el => {
-      el.addEventListener("mouseenter", () => {
-        cursor.style.width = "28px";
-        cursor.style.height = "28px";
-        cursor.style.background = "rgba(0, 255, 231, 0.3)";
-        cursor.style.border = "1px solid var(--accent)";
-      });
-      el.addEventListener("mouseleave", () => {
-        cursor.style.width = "18px";
-        cursor.style.height = "18px";
-        cursor.style.background = "var(--accent)";
-        cursor.style.border = "none";
-      });
-    });
-  }
-  refreshCursorListeners();
-
-  // --- DOT BACKGROUND ANIMATION ---
-  const spacing = 40;
-  const radius = 150;
-  const baseSize = 1.5;
-
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const spacing = 40;
+    const radius = 150;
     for (let x = 0; x < canvas.width; x += spacing) {
       for (let y = 0; y < canvas.height; y += spacing) {
         const dx = mouse.x - x;
         const dy = mouse.y - y;
         const distance = Math.sqrt(dx*dx + dy*dy);
-        let size = baseSize;
-        if (distance < radius) {
-          const intensity = 1 - (distance / radius);
-          size = baseSize + intensity * 4;
-        }
+        let size = (distance < radius) ? 1.5 + (1 - distance / radius) * 4 : 1.5;
         ctx.beginPath();
         ctx.arc(x, y, size, 0, Math.PI * 2);
         ctx.fillStyle = "rgba(0, 255, 255, 0.29)";
@@ -311,20 +587,55 @@ document.addEventListener("DOMContentLoaded", () => {
     requestAnimationFrame(draw);
   }
   draw();
+
+  document.getElementById('openSettings').onclick = () => document.getElementById('settingsPanel').classList.add('open');
+  document.getElementById('sideSettingsBtn').onclick = () => document.getElementById('settingsPanel').classList.add('open');
+  document.getElementById('closeSettings').onclick = () => document.getElementById('settingsPanel').classList.remove('open');
+  
+  document.getElementById('cursorToggle').onchange = saveOptions;
+  document.getElementById('sidebarToggle').onchange = saveOptions;
+  
+  document.getElementById('optDots').onclick = () => { document.body.classList.remove('use-static'); saveOptions(); };
+  document.getElementById('optStatic').onclick = () => { document.body.classList.add('use-static'); saveOptions(); };
+
+  document.getElementById('cloakBtn').onclick = () => launchCloak();
+  document.getElementById('openPresetsBtn').onclick = openPresets;
+  renderPresets();
 });
 
-// Modal Actions
 function acceptTerms() { 
   document.getElementById('termsOverlay').classList.add('hidden');
   document.getElementById('updateOverlay').classList.remove('hidden');
 }
-
 function closeUpdate() { 
   document.getElementById('updateOverlay').classList.add('hidden');
-  // Store version so they don't see it again until you update currentVersion
+  document.body.classList.remove('overlay-active');
   localStorage.setItem('ggui_version', currentVersion);
 }
+function launchCloak(t, i) {
+  const title = t || document.getElementById('cloakTitleInput').value || "Google";
+  const win = window.open();
+  if (!win) return;
+  win.document.title = title;
+  const iframe = win.document.createElement('iframe');
+  iframe.style.cssText = "width:100%; height:100%; border:none; position:fixed; inset:0;";
+  iframe.src = window.location.href;
+  win.document.body.appendChild(iframe);
+  window.location.replace("https://google.com");
+}
+function openPresets() { document.getElementById('presetOverlay').classList.remove('hidden'); document.body.classList.add('overlay-active'); }
+function closePresets() { document.getElementById('presetOverlay').classList.add('hidden'); document.body.classList.remove('overlay-active'); }
+function renderPresets() {
+  const grid = document.getElementById('presetGrid');
+  grid.innerHTML = '';
+  cloakPresets.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'preset-card';
+    card.innerHTML = `<img src="${p.icon}"><span>${p.name}</span>`;
+    card.onclick = () => launchCloak(p.title, p.icon);
+    grid.appendChild(card);
+  });
+}
 </script>
-
 </body>
 </html>

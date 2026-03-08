@@ -1,0 +1,43 @@
+.game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 25px;
+    padding: 20px 0;
+}
+
+.zone-item {
+    background: rgba(10, 10, 10, 0.8);
+    border: 1px solid rgba(0, 255, 231, 0.2);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(10px);
+}
+
+.zone-item:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(0, 255, 231, 0.3);
+    transform: translateY(-5px);
+}
+
+.zone-item img {
+    width: 100%;
+    aspect-ratio: 16/10;
+    object-fit: cover;
+    border-bottom: 1px solid rgba(0, 255, 231, 0.1);
+}
+
+.zone-item button {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: 'Orbitron';
+    padding: 15px;
+    font-size: 12px;
+    cursor: none; /* Let the custom cursor handle it */
+}
+
+.zone-item:hover button {
+    color: var(--accent);
+}

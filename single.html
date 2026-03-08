@@ -10,6 +10,11 @@
   <link rel="stylesheet" href="assets/css/main.css">
 
   <style>
+    :root {
+      --side-width: 80px;
+      --side-expand: 240px;
+    }
+
     html, body {
       height: 100%;
       margin: 0;
@@ -17,6 +22,7 @@
       font-family: 'Orbitron', sans-serif;
       overflow: hidden;
       cursor: none;
+      transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     #bgCanvas {
@@ -29,6 +35,21 @@
       pointer-events: none;
     }
 
+    .static-bg-layer {
+      position: fixed;
+      inset: 0;
+      background: url('assets/img/bg-static.png') no-repeat center center;
+      background-size: cover;
+      display: none;
+      z-index: -1;
+    }
+    body.use-static .static-bg-layer { display: block; }
+    body.use-static #bgCanvas { display: none; }
+
+    body.cursor-off { cursor: auto !important; }
+    body.cursor-off .custom-cursor { display: none !important; }
+    body.cursor-off a, body.cursor-off button, body.cursor-off .game-card, body.cursor-off .icon-btn, body.cursor-off .side-item { cursor: auto !important; }
+
     .custom-cursor {
       position: fixed;
       width: 18px;
@@ -37,9 +58,107 @@
       border-radius: 50%;
       transform: translate(-50%, -50%);
       pointer-events: none;
-      z-index: 10000;
+      z-index: 15000;
       box-shadow: 0 0 12px #00ffffaa;
       transition: transform 0.08s ease-out, width 0.2s, height 0.2s;
+    }
+
+    /* Sidebar UI */
+    .side-nav {
+      position: fixed;
+      left: calc(var(--side-width) * -1.2);
+      top: 0;
+      bottom: 0;
+      width: var(--side-width);
+      background: rgba(5, 5, 5, 0.95);
+      border-right: 1px solid rgba(0, 255, 231, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 20px 15px;
+      gap: 15px;
+      z-index: 13000;
+      transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    .side-nav:hover { width: var(--side-expand); }
+    
+    .side-item {
+      width: 100%;
+      height: 50px;
+      min-height: 50px;
+      border-radius: 12px;
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.2s ease;
+      cursor: none;
+      text-decoration: none;
+      padding: 0 13px;
+      white-space: nowrap;
+      box-sizing: border-box;
+      color: #fff;
+    }
+    
+    .side-item img, .side-item svg { 
+        width: 24px; 
+        height: 24px; 
+        min-width: 24px;
+        stroke: #fff; /* Restored white icon color */
+    }
+    
+    .side-item span {
+      margin-left: 20px;
+      font-family: 'Orbitron';
+      font-size: 14px;
+      color: #fff;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
+    .side-nav:hover .side-item span { opacity: 1; }
+    .side-item:hover { 
+        border-color: #00ffff; 
+        box-shadow: 0 0 15px #00ffff; 
+        transform: translateX(5px); 
+        color: #00ffff;
+    }
+    .side-item:hover svg { stroke: #00ffff; }
+
+    body.sidebar-mode { padding-left: var(--side-width); }
+    body.sidebar-mode .side-nav { left: 0; }
+    body.sidebar-mode .top-bar { display: none !important; }
+    body.sidebar-mode #bgCanvas, body.sidebar-mode .static-bg-layer, body.sidebar-mode .page, body.sidebar-mode .iframe-view { 
+      left: var(--side-width); 
+      width: calc(100% - var(--side-width)); 
+      top: 0; 
+      height: 100vh; 
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px;
+      transition: transform 0.3s ease, color 0.3s ease, filter 0.3s ease;
+    }
+    .icon-btn:hover { color: #00ffff; transform: scale(1.1); filter: drop-shadow(0 0 8px #00ffff); }
+
+    .top-bar {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(10px);
+      z-index: 100;
     }
 
     .page {
@@ -85,11 +204,7 @@
       cursor: none;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-
-    .game-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 0 35px rgba(0,255,255,0.9);
-    }
+    .game-card:hover { transform: translateY(-4px); box-shadow: 0 0 35px rgba(0,255,255,0.9); }
 
     .game-thumb {
       width: 100%;
@@ -100,12 +215,7 @@
       justify-content: center;
       overflow: hidden;
     }
-
-    .game-thumb img {
-      max-width: 90%;
-      max-height: 90%;
-      object-fit: contain;
-    }
+    .game-thumb img { max-width: 90%; max-height: 90%; object-fit: contain; }
 
     .game-title {
       padding: 12px;
@@ -122,7 +232,6 @@
       display: none;
       z-index: 100;
     }
-
     .iframe-view iframe { width: 100%; height: 100%; border: none; }
 
     .back-btn {
@@ -135,22 +244,117 @@
       border: 2px solid #9ffcff;
       padding: 8px 16px;
       border-radius: 10px;
-      cursor: none;
+      cursor: pointer !important;
       box-shadow: 0 0 12px #00ffff;
     }
+
+    .settings-panel {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 350px;
+      height: 100%;
+      background: rgba(5, 5, 5, 0.95);
+      backdrop-filter: blur(20px);
+      border-left: 2px solid #00ffff;
+      z-index: 16000;
+      transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+      cursor: auto !important;
+    }
+    .settings-panel.open { right: 0; }
+    .close-settings-btn { background: none; border: none; color: #fff; font-size: 32px; cursor: pointer !important; }
+    .settings-header h2 { font-size: 20px; color: #00ffff; font-family: 'Orbitron'; }
+    .settings-section h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; color: #9ffcff; opacity: 0.6; font-family: 'Orbitron'; }
+    .setting-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; background-color: #333; transition: .4s; border-radius: 22px; cursor: pointer !important; }
+    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: #00ffff; }
+    input:checked + .slider:before { transform: translateX(22px); }
+    .bg-preview-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .bg-opt { border: 2px solid transparent; border-radius: 12px; background: #111; padding: 8px; text-align: center; transition: 0.2s; cursor: pointer !important; }
+    .bg-opt.active { border-color: #00ffff; box-shadow: 0 0 10px #00ffff; }
   </style>
 </head>
-  
+
 <body>
 
 <canvas id="bgCanvas"></canvas>
+<div class="static-bg-layer" id="staticBg"></div>
 <div class="custom-cursor" id="cursor"></div>
 
+<nav class="side-nav" id="sideNav">
+  <a href="index.html" class="side-item"><img src="assets/img/controller.svg" alt="Home"><span>Home</span></a>
+  <a href="multi.html" class="side-item"><img src="assets/img/grid.svg" alt="Multi"><span>Mlti-Gme Websites</span></a>
+  <a href="single.html" class="side-item"><img src="assets/img/square.svg" alt="Single"><span>1-Gme Websites</span></a>
+  <a href="app.html" class="side-item"><img src="assets/img/square.svg" alt="Apps"><span>Apps</span></a>
+  <a href="extras.html" class="side-item"><img src="assets/img/extras.png" alt="Extras"><span>Extras</span></a>
+  <a href="resources.html" class="side-item"><img src="assets/img/resources.png" alt="Res"><span>Resources</span></a>
+  <a href="G.GUI - Games/game.html" class="side-item"><img src="assets/img/game.png" alt="Games"><span>Games</span></a>
+
+  <div style="flex-grow: 1;"></div>
+  
+  <button class="side-item" id="sideSettingsBtn">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    <span>Settings</span>
+  </button>
+</nav>
+
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-header">
+    <h2>SETTINGS</h2>
+    <button class="close-settings-btn" id="closeSettings">&times;</button>
+  </div>
+  <div class="settings-section">
+    <h3>Layout</h3>
+    <div class="setting-item">
+      <span>Sidebar Mode</span>
+      <label class="switch">
+        <input type="checkbox" id="sidebarToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+  <div class="settings-section">
+    <h3>Personalization</h3>
+    <div class="setting-item">
+      <span>Custom Cursor</span>
+      <label class="switch">
+        <input type="checkbox" id="cursorToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div style="margin-top:10px;">
+      <span style="font-size: 13px; display: block; margin-bottom: 10px;">Background Mode</span>
+      <div class="bg-preview-container">
+        <div class="bg-opt active" id="optDots"><span>Dotted</span></div>
+        <div class="bg-opt" id="optStatic"><span>Static</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <header class="top-bar">
-  <a href="index.html" class="controller-home">
-    <img src="assets/img/controller.svg" alt="Home">
-  </a>
-  <a href="https://discord.gg/AC5nAtdd" target="_blank" class="discord-btn">Discord</a>
+  <div style="display: flex; gap: 15px; align-items: center;">
+    <a href="index.html" class="controller-home">
+      <img src="assets/img/controller.svg" alt="Home">
+    </a>
+  </div>
+  <div style="display: flex; gap: 15px; align-items: center;">
+    <button id="openSettings" class="icon-btn" title="Settings">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+    </button>
+    <a href="https://discord.gg/AC5nAtdd" target="_blank" class="discord-btn">Discord</a>
+  </div>
 </header>
 
 <main class="page" id="selectorView">
@@ -227,74 +431,91 @@
   const cursor = document.getElementById("cursor");
   let mouse = { x: -1000, y: -1000 };
 
+  function applySettings(s) {
+    if(!s) return;
+    document.body.classList.toggle('cursor-off', s.cursor === false);
+    document.body.classList.toggle('sidebar-mode', s.sidebar === true);
+    if(s.bg === 'static') {
+      document.body.classList.add('use-static');
+      document.getElementById('optStatic').classList.add('active');
+      document.getElementById('optDots').classList.remove('active');
+    } else {
+      document.body.classList.remove('use-static');
+      document.getElementById('optDots').classList.add('active');
+      document.getElementById('optStatic').classList.remove('active');
+    }
+    resize();
+  }
+
+  function loadOptions() {
+    const saved = localStorage.getItem('ggui_settings');
+    if(saved) {
+      const s = JSON.parse(saved);
+      if(document.getElementById('cursorToggle')) document.getElementById('cursorToggle').checked = s.cursor;
+      if(document.getElementById('sidebarToggle')) document.getElementById('sidebarToggle').checked = s.sidebar;
+      applySettings(s);
+    }
+  }
+
+  function saveOptions() {
+    const settings = {
+      cursor: document.getElementById('cursorToggle').checked,
+      sidebar: document.getElementById('sidebarToggle').checked,
+      bg: document.body.classList.contains('use-static') ? 'static' : 'dots'
+    };
+    localStorage.setItem('ggui_settings', JSON.stringify(settings));
+    applySettings(settings);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadOptions();
+    resize();
+    draw();
+    const openIds = ['openSettings', 'sideSettingsBtn'];
+    openIds.forEach(id => {
+      const btn = document.getElementById(id);
+      if(btn) btn.addEventListener('click', () => document.getElementById('settingsPanel').classList.add('open'));
+    });
+    document.getElementById('closeSettings').addEventListener('click', () => document.getElementById('settingsPanel').classList.remove('open'));
+    document.getElementById('cursorToggle').addEventListener('change', saveOptions);
+    document.getElementById('sidebarToggle').addEventListener('change', saveOptions);
+    document.getElementById('optDots').addEventListener('click', () => { document.body.classList.remove('use-static'); saveOptions(); });
+    document.getElementById('optStatic').addEventListener('click', () => { document.body.classList.add('use-static'); saveOptions(); });
+    refreshInteractiveListeners();
+  });
+
   function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
   }
   window.addEventListener("resize", resize);
-  resize();
-
   document.addEventListener("mousemove", (e) => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-    cursor.style.left = e.clientX + "px";
-    cursor.style.top = e.clientY + "px";
+    mouse.x = e.clientX; mouse.y = e.clientY;
+    cursor.style.left = e.clientX + "px"; cursor.style.top = e.clientY + "px";
   });
-
-  document.addEventListener("mousedown", () => {
-    cursor.style.transform = "translate(-50%, -50%) scale(0.7)";
-  });
-
-  document.addEventListener("mouseup", () => {
-    cursor.style.transform = "translate(-50%, -50%) scale(1)";
-  });
-
-  const spacing = 40;
-  const radius = 150;
-  const baseSize = 1.5;
-
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const spacing = 40, radius = 150, baseSize = 1.5;
     for (let x = 0; x < canvas.width; x += spacing) {
-      for (let y = 0; y < canvas.height; y += spacing) {
-        const dx = mouse.x - x;
-        const dy = mouse.y - y;
-        const distance = Math.sqrt(dx*dx + dy*dy);
-        let size = baseSize;
-        if (distance < radius) {
-          const intensity = 1 - (distance / radius);
-          size = baseSize + intensity * 4;
-        }
-        ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0, 255, 255, 0.12)";
-        ctx.fill();
+      for (let y = 0; y < canvas.height; y += spacing) {s
+        const dx = mouse.x - x, dy = mouse.y - y, distance = Math.sqrt(dx*dx + dy*dy);
+        let size = distance < radius ? baseSize + (1 - distance / radius) * 4 : baseSize;
+        ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI * 2); ctx.fillStyle = "rgba(0, 255, 255, 0.12)"; ctx.fill();
       }
     }
     requestAnimationFrame(draw);
   }
-  draw();
-
-  const interactive = document.querySelectorAll("a, button, .game-card");
-  interactive.forEach(el => {
-    el.addEventListener("mouseenter", () => {
-      cursor.style.width = "28px";
-      cursor.style.height = "28px";
-      cursor.style.boxShadow = "0 0 20px #00ffff";
+  function refreshInteractiveListeners() {
+    document.querySelectorAll("a, button, .game-card, .icon-btn, .side-item").forEach(el => {
+      el.addEventListener("mouseenter", () => { cursor.style.width = "28px"; cursor.style.height = "28px"; cursor.style.boxShadow = "0 0 20px #00ffff"; });
+      el.addEventListener("mouseleave", () => { cursor.style.width = "18px"; cursor.style.height = "18px"; cursor.style.boxShadow = "0 0 12px #00ffffaa"; });
     });
-    el.addEventListener("mouseleave", () => {
-      cursor.style.width = "18px";
-      cursor.style.height = "18px";
-      cursor.style.boxShadow = "0 0 12px #00ffffaa";
-    });
-  });
-
+  }
   function launchSite(url) {
     document.getElementById('selectorView').style.display = 'none';
     document.getElementById('iframeView').style.display = 'block';
     document.getElementById('siteFrame').src = url;
   }
-
   function closeIframe() {
     document.getElementById('siteFrame').src = '';
     document.getElementById('iframeView').style.display = 'none';
