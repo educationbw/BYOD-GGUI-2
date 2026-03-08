@@ -8,10 +8,10 @@ This repository hosts the website for SchoolsOfEasternNevada. The site can be ho
 
 ## Table of Contents
 
-- Website
-- How To Use
-- Deployment (Vercel / Netlify)
-- Running Locally
+- [Website](#Website)
+- [How To Use](#HowToUse)
+- [Deployment (Vercel / Netlify)](#Deployment)
+- [Running Locally](#RunLocal)
 - Custom Domains With GitHub Pages
 
 ---
@@ -28,7 +28,7 @@ Use these tools appropriately and follow your network or school rules.
 
 ---
 
-## How To Use
+## HowToUse
 
 1. Open the website in your browser.
 2. Navigate through the homepage interface.
@@ -73,7 +73,7 @@ Netlify will automatically host the website.
 
 ---
 
-## Running Locally
+## RunLocally
 
 To run the website on your computer:
 
