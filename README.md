@@ -9,7 +9,6 @@ This repository hosts the website for SchoolsOfEasternNevada. The site can be ho
 ## Table of Contents
 
 - [Website](#Website)
-- [How To Use](#HowToUse)
 - [Deployment (Vercel / Netlify)](#Deployment)
 - [Running Locally](#RunLocal)
 - Custom Domains With GitHub Pages
@@ -28,20 +27,12 @@ Use these tools appropriately and follow your network or school rules.
 
 ---
 
-## HowToUse
-
-1. Open the website in your browser.
-2. Navigate through the homepage interface.
-3. Select the tool or option you want to use.
-4. Follow the instructions shown on the page.
-
-The interface is designed so users do not need to install anything.
-
----
 
 ## Deployment
 
-You can deploy this site instantly using modern hosting platforms.
+This section explains how to deploy your BYOD site using hosting services
+
+If you choose to deploy to a hosting service, fork this repository, and use it in the listed steps below.
 
 ### Deploy to Vercel
 
@@ -73,15 +64,29 @@ Netlify will automatically host the website.
 
 ---
 
+### Other hosting services
+
+We can't list all of the hosting services here, so here is a general guide on how to deploy using a hosting serice:
+
+1. Find out if you can import the repository directly for from Github
+      If your answer is yes, continue with the "A" steps below
+      If your answer is no, continue with the "B" steps below
+
+2A. Choose the forked repository you want to host
+2B. Download the source code for G.GUI through Github
+3A. Deploy the website - YOUR DONE
+3B. Fix any folder structure issues, and add any required files that hosting service requires
+4B. Deploy the website - YOUR DONE
+
 ## RunLocally
 
 To run the website on your computer:
 
-Clone the repository
+Clone the repository:
 
 git clone https://github.com/SchoolsOfEasternNevada/SchoolsOfEasternNevada.github.io
 
-Open the project folder
+Open the project folder:
 
 cd SchoolsOfEasternNevada.github.io
 
@@ -103,7 +108,7 @@ http://localhost:8000
 
 You can connect your own domain (for example example.com) to your GitHub Pages site.
 
-### Step 1 — Buy a Domain
+### Step 1 — Buy a Domain, Or get a free one
 
 Purchase a domain from a registrar such as:
 
@@ -111,6 +116,8 @@ Purchase a domain from a registrar such as:
 - GoDaddy
 - Google Domains
 - Cloudflare
+
+Or claim free subdomains from [FreeDNS](https://freedns.afraid.org/) or other services
 
 Example domain:
 
@@ -177,3 +184,5 @@ https://www.example.com
 
 ---
 
+
+© 2026 G.GUI Project - BYOD Guide
