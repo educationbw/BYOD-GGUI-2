@@ -11,8 +11,7 @@ This repository hosts the website for SchoolsOfEasternNevada. The site can be ho
 - [Website](#Website)
 - [Deployment (Vercel / Netlify)](#Deployment)
 - [Running Locally](#RunLocal)
-- [Custom Domains With GitHub Pages](##Custom Domains With GitHub Pages)
-
+- [Custom Domains With GitHub Pages](#GithubPages)
 ---
 
 ## Website
@@ -104,7 +103,12 @@ http://localhost:8000
 
 ---
 
-## Custom Domains With GitHub Pages
+##GithubPages 
+
+You can host G.GUI on github pages by:
+
+->Forking this repository
+Settings > Pages > Select Main and Root and click Save
 
 You can connect your own domain (for example example.com) to your GitHub Pages site.
 
